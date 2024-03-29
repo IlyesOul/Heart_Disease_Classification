@@ -83,6 +83,8 @@ y_test = Y[int(len(X)*.75):]
 # plt.plot(range(10, 120, 10), scores, c='red')
 # plt.show()
 
+print()
+
 # Create optimized Forest Ensemble
 forest_ensemble = RandomForestClassifier(n_estimators=30)
 
@@ -99,27 +101,26 @@ forest_ensemble.fit(x_train, y_train)
 
 # User Prompting
 
-prompt_results = []
-
 # Presence values
 # prompt_results = [56, 1, 2, 310, 270, 1, 2, 150, 1, 2, 2, 1, 3]
+prompt_results = []
 
 prompt_results.append(int(input("What is your age? ")))
 prompt_results.append(int(input("What is your sex? (0 for male, 1 for female) ")))
 prompt_results.append(int(input("What kind of chest pains are you feeling? Enter 1 for typical angina, 2 for atypical angina"
                             ", 3 for non-typical anginal pain, or 4 if you're  asymptomatic: ")))
 blood_pressure = (int(input("What is your blood pressure? ")))
-# blood_pressure = 310
+# blood_pressure = 240
 prompt_results.append(blood_pressure)
 cholesterol_level = int(input("What is your cholesterol? "))
-# cholesterol_level = 210
+# cholesterol_level = 240
 prompt_results.append(cholesterol_level)
 sugar_above_120 = int(input("Is your fasting blood sugar level over 120 mg/dl? (1 for true and 0 for false): "))
 prompt_results.append(sugar_above_120)
 # sugar_above_120 = 1
 prompt_results.append(int(input("If any, what is the result of your EKG test?  ")))
 heart_beat = int(input("When your heart is under stress, what's the highest rate at which it can beat? "))
-# heart_beat = 130
+# heart_beat = 240
 prompt_results.append(heart_beat)
 prompt_results.append(int(input("Do you experience angina chest pain when you exercise? (1 for yes, 0 for no): ")))
 prompt_results.append(int(input("If you experience any levels of S/T Depression, indicate it now: ")))
@@ -127,16 +128,18 @@ prompt_results.append(int(input("Please enter the slope of your S/T Depression: 
                                  "and 3 for downsloping) ")))
 prompt_results.append(int(input("How many of your major vessels have been colored by fluoroscopy? (0-3) ")))
 prompt_results.append(int(input("Please enter the results of any Thallium testing you may have had:"
-                                 "(3 for normal, 6 for fixed defect, 7 for reversable defect) ")))
-
+                                "(3 for normal, 6 for fixed defect, 7 for reversable defect) ")))
+# print(prompt_results)
 prediction_result = forest_ensemble.predict([prompt_results])
 
 print(f"Based on your current conditions, we've predicted that you ", end='')
 
 if prediction_result[0] == "Presence":
     print("may have disease present in your body ")
+    print()
 else:
     print("are disease free! ")
+    print()
 
 if prediction_result[0] == "Presence":
     # Beginning of web-scrapping
@@ -194,8 +197,8 @@ if prediction_result[0] == "Presence":
             target_condition = item.title()
 
     # Prepare second request to determine solution
-    url = f'https://www.google.com/search?q={parse_spaces(f"What should I do if I have {target_condition}")}&rlz=1C1CHBF_enUS968US968&oq={parse_spaces(f"What should I do if I have {target_condition}")}&gs_lcrp=EgZjaHJvbWUqBwgAEAAYgAQyBwgAEAAYgAQyBwgBEAAYgAQyDQgCEAAYhgMYgAQYigUyDQgDEAAYhgMYgAQYigXSAQg0NjExajBqN6gCALACAA&sourceid=chrome&ie=UTF-8'
-
+    url = f'https://www.google.com/search?q={parse_spaces(f"What is one thing I should do if I have {target_condition}")}&rlz=1C1CHBF_enUS968US968&oq={parse_spaces(f"What is one thing I should do if I have {target_condition}")}&gs_lcrp=EgZjaHJvbWUqBwgAEAAYgAQyBwgAEAAYgAQyBwgBEAAYgAQyDQgCEAAYhgMYgAQYigUyDQgDEAAYhgMYgAQYigXSAQg0NjExajBqN6gCALACAA&sourceid=chrome&ie=UTF-8'
+    # print(f"url = {url}")
     # Make query request
     request = re.get(url, headers=headers).text
 
@@ -205,17 +208,24 @@ if prediction_result[0] == "Presence":
 
     for n in soup.find_all("li", "TrT0Xe"):
         solutions.append(n.text)
+    if len(solutions) == 0:
+        for n in soup.find_all("b"):
+            solutions.append(n.text)
 
     # Iterate through results and locate solution
     target_solutions = []
 
     for item in solutions:
+        if item[len(item)-1] == '.' or item[len(item)-1] == ",":
+            item = item[:len(item)-1]
         target_solutions.append(item)
-
+    print(f"Target solutions are {target_solutions}")
     # Display predicted disease and solutions
 
-    print(f"Based on your current conditions, we predict that you may have: {target_condition}")
-    print("We suggest that you do the following in order to quell your condition:")
+    print(f"We predict that you may have: {target_condition}")
+    print()
+    print("We suggest that you take the following action to counterattack your condition:")
+    print()
 
     for solution in target_solutions:
         print(solution)
